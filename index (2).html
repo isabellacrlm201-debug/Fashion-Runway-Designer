@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fashion Star: Runway Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            pink: '#ff2a85',
+                            purple: '#8a2be2',
+                            gold: '#ffd700',
+                            dark: '#0f0c20',
+                            card: '#1d1736'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at center, #1f1138 0%, #0a0612 100%);
+            color: #ffffff;
+            touch-action: manipulation;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(30, 20, 50, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glow-pink {
+            box-shadow: 0 0 20px rgba(255, 42, 133, 0.6);
+        }
+
+        .glow-gold {
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .tab-active {
+            background: linear-gradient(135deg, #ff2a85 0%, #8a2be2 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(255, 42, 133, 0.4);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 12, 32, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ff2a85;
+            border-radius: 10px;
+        }
+
+        .color-bubble {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid rgba(255,255,255,0.4);
+        }
+        .color-bubble:hover, .color-bubble.active {
+            transform: scale(1.2);
+            border-color: #ffffff;
+            box-shadow: 0 0 10px #ffffff;
+        }
+
+        /* Runway Spotlight Animation */
+        @keyframes spotlightMove {
+            0% { transform: translateX(-50%) rotate(-15deg); }
+            50% { transform: translateX(-50%) rotate(15deg); }
+            100% { transform: translateX(-50%) rotate(-15deg); }
+        }
+        .spotlight {
+            position: absolute;
+            top: -20%;
+            left: 50%;
+            width: 200px;
+            height: 600px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%);
+            clip-path: polygon(40% 0, 60% 0, 100% 100%, 0% 100%);
+            animation: spotlightMove 6s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        /* Flash photography effect */
+        @keyframes cameraFlash {
+            0% { opacity: 0; }
+            10% { opacity: 0.9; }
+            20% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+        .flash-screen {
+            animation: cameraFlash 2.5s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between select-none">
+
+    <header class="glass-panel sticky top-0 z-40 px-4 py-3 flex items-center justify-between border-b border-white/10">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-xl font-bold shadow-lg">
+                <i class="fas fa-crown text-amber-300"></i>
+            </div>
+            <div>
+                <h1 class="font-serif font-bold text-lg md:text-xl tracking-wide bg-gradient-to-r from-pink-400 via-purple-300 to-amber-300 bg-clip-text text-transparent">
+                    FASHION STAR
+                </h1>
+                <p class="text-xs text-purple-200/70 hidden sm:block">Desafío de Alta Costura & Pasarela IA</p>
+            </div>
+        </div>
+
+        <!-- Level & Stats Widget -->
+        <div class="flex items-center gap-3">
+            <div class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 border border-amber-400/30">
+                <i class="fas fa-gem text-amber-400 text-sm"></i>
+                <span id="coins-display" class="font-bold text-sm text-amber-300">1,200</span>
+            </div>
+            <div class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 border border-pink-500/30">
+                <i class="fas fa-trophy text-pink-400 text-sm"></i>
+                <span id="level-display" class="font-bold text-xs md:text-sm text-white">Nivel 1</span>
+            </div>
+            <button id="sound-btn" onclick="toggleSound()" class="w-9 h-9 rounded-full glass-panel flex items-center justify-center text-purple-200 hover:text-white transition">
+                <i class="fas fa-volume-up" id="sound-icon"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+        
+        <!-- LEFT COLUMN: Character Viewport / Canvas Studio (5 cols) -->
+        <section class="lg:col-span-5 flex flex-col items-center justify-center relative w-full">
+            
+            <!-- Challenge Header Banner -->
+            <div id="challenge-card" class="w-full glass-panel p-3 rounded-2xl mb-3 border-l-4 border-pink-500 flex justify-between items-center shadow-lg">
+                <div>
+                    <span class="text-xs font-semibold text-pink-400 uppercase tracking-widest">Reto Actual</span>
+                    <h2 id="theme-title" class="text-base font-bold text-white font-serif">Gala de Alfombra Roja</h2>
+                    <p id="theme-desc" class="text-xs text-gray-300">Elegancia deslumbrante, vestidos largos y destellos glamorosos.</p>
+                </div>
+                <div class="text-right pl-2">
+                    <span class="text-xs text-purple-300 block">Objetivo</span>
+                    <span id="target-score" class="text-sm font-extrabold text-amber-400">85 pts</span>
+                </div>
+            </div>
+
+            <!-- Model Viewing Area Container -->
+            <div class="relative w-full aspect-[3/4] max-w-[420px] rounded-3xl glass-panel overflow-hidden flex flex-col items-center justify-center border border-white/20 shadow-2xl group">
+                
+                <!-- Background Environment FX -->
+                <div class="absolute inset-0 bg-gradient-to-b from-purple-900/40 via-purple-950/60 to-black/80"></div>
+                <div class="spotlight opacity-75"></div>
+                
+                <!-- SVG Model Display Box -->
+                <div id="model-container" class="relative z-10 w-full h-full flex items-center justify-center p-2">
+                    <!-- SVG Interactive Model Layering engine renders here -->
+                </div>
+
+                <!-- Floating Canvas Controls -->
+                <div class="absolute bottom-3 left-3 right-3 z-20 flex justify-between items-center">
+                    <button onclick="resetOutfit()" class="glass-panel px-3 py-1.5 rounded-full text-xs hover:bg-white/10 transition flex items-center gap-1.5 text-gray-200">
+                        <i class="fas fa-undo"></i> Reiniciar
+                    </button>
+                    <button onclick="randomizeStyle()" class="glass-panel px-3 py-1.5 rounded-full text-xs hover:bg-white/10 transition flex items-center gap-1.5 text-pink-300">
+                        <i class="fas fa-magic"></i> Sorpresa IA
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Action CTA Button -->
+            <button onclick="startRunwayShow()" class="w-full max-w-[420px] mt-3 py-4 rounded-2xl font-bold text-lg text-white bg-gradient-to-r from-pink-500 via-purple-600 to-amber-500 hover:from-pink-600 hover:to-amber-600 glow-pink transition transform active:scale-95 flex items-center justify-center gap-3 shadow-xl">
+                <i class="fas fa-walking text-xl"></i> IR A LA PASARELA
+            </button>
+        </section>
+
+        <!-- RIGHT COLUMN: Studio Workstation / Wardrobe & Makeup Tabs (7 cols) -->
+        <section class="lg:col-span-7 w-full flex flex-col h-full min-h-[550px] glass-panel rounded-3xl p-3 sm:p-5 border border-white/10 shadow-2xl">
+            
+            <!-- Category Tabs Navigation -->
+            <nav class="flex space-x-1 sm:space-x-2 border-b border-white/10 pb-3 overflow-x-auto no-scrollbar">
+                <button onclick="switchTab('models')" id="tab-btn-models" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 transition whitespace-nowrap tab-active">
+                    <i class="fas fa-user-style"></i> Modelos
+                </button>
+                <button onclick="switchTab('makeup')" id="tab-btn-makeup" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 transition whitespace-nowrap text-gray-400 hover:text-white">
+                    <i class="fas fa-paint-brush"></i> Maquillaje
+                </button>
+                <button onclick="switchTab('hair')" id="tab-btn-hair" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 transition whitespace-nowrap text-gray-400 hover:text-white">
+                    <i class="fas fa-cut"></i> Peinado
+                </button>
+                <button onclick="switchTab('clothes')" id="tab-btn-clothes" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 transition whitespace-nowrap text-gray-400 hover:text-white">
+                    <i class="fas fa-tshirt"></i> Ropa
+                </button>
+                <button onclick="switchTab('accessories')" id="tab-btn-accessories" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 transition whitespace-nowrap text-gray-400 hover:text-white">
+                    <i class="fas fa-glasses"></i> Accesorios
+                </button>
+            </nav>
+
+            <!-- TAB CONTENT PANELS CONTAINER -->
+            <div class="flex-1 py-4 overflow-y-auto max-h-[500px] pr-1">
+
+                <!-- 1. MODELS TAB (Body Diversity) -->
+                <div id="tab-models" class="tab-content space-y-4">
+                    <h3 class="text-sm font-bold text-pink-400 uppercase tracking-wider">Selecciona la Figura de tu Modelo</h3>
+                    <p class="text-xs text-gray-300">Elige entre una amplia diversidad de cuerpos, alturas y tonos de piel reales.</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div onclick="selectModel(0)" id="model-card-0" class="model-select-card cursor-pointer glass-panel p-3 rounded-2xl border-2 border-pink-500 bg-pink-500/10 flex flex-col items-center hover:scale-105 transition">
+                            <div class="w-16 h-16 rounded-full bg-amber-200/20 flex items-center justify-center text-2xl font-bold text-amber-200 mb-2">
+                                <i class="fas fa-user-alt"></i>
+                            </div>
+                            <span class="text-xs font-bold text-white text-center">Valentina</span>
+                            <span class="text-[10px] text-gray-400">Curvy Glam</span>
+                        </div>
+                        <div onclick="selectModel(1)" id="model-card-1" class="model-select-card cursor-pointer glass-panel p-3 rounded-2xl border-2 border-transparent hover:border-pink-500 flex flex-col items-center hover:scale-105 transition">
+                            <div class="w-16 h-16 rounded-full bg-amber-800/20 flex items-center justify-center text-2xl font-bold text-amber-600 mb-2">
+                                <i class="fas fa-user-alt"></i>
+                            </div>
+                            <span class="text-xs font-bold text-white text-center">Amina</span>
+                            <span class="text-[10px] text-gray-400">Esbelta / Alta</span>
+                        </div>
+                        <div onclick="selectModel(2)" id="model-card-2" class="model-select-card cursor-pointer glass-panel p-3 rounded-2xl border-2 border-transparent hover:border-pink-500 flex flex-col items-center hover:scale-105 transition">
+                            <div class="w-16 h-16 rounded-full bg-amber-100/20 flex items-center justify-center text-2xl font-bold text-amber-100 mb-2">
+                                <i class="fas fa-user-alt"></i>
+                            </div>
+                            <span class="text-xs font-bold text-white text-center">Elena</span>
+                            <span class="text-[10px] text-gray-400">Petite Chic</span>
+                        </div>
+                        <div onclick="selectModel(3)" id="model-card-3" class="model-select-card cursor-pointer glass-panel p-3 rounded-2xl border-2 border-transparent hover:border-pink-500 flex flex-col items-center hover:scale-105 transition">
+                            <div class="w-16 h-16 rounded-full bg-amber-600/20 flex items-center justify-center text-2xl font-bold text-amber-400 mb-2">
+                                <i class="fas fa-user-alt"></i>
+                            </div>
+                            <span class="text-xs font-bold text-white text-center">Zoe</span>
+                            <span class="text-[10px] text-gray-400">Atlántica Atlética</span>
+                        </div>
+                    </div>
+
+                    <!-- Skin Tone Fine-Tuning -->
+                    <div class="mt-4 glass-panel p-3 rounded-2xl">
+                        <label class="text-xs font-bold text-purple-300 block mb-2">Personalizar Tono de Piel</label>
+                        <div class="flex gap-2 wrap">
+                            <div onclick="setSkinColor('#ffdbac')" class="color-bubble" style="background:#ffdbac"></div>
+                            <div onclick="setSkinColor('#f1c27d')" class="color-bubble" style="background:#f1c27d"></div>
+                            <div onclick="setSkinColor('#e0ac69')" class="color-bubble" style="background:#e0ac69"></div>
+                            <div onclick="setSkinColor('#c68642')" class="color-bubble" style="background:#c68642"></div>
+                            <div onclick="setSkinColor('#8d5524')" class="color-bubble" style="background:#8d5524"></div>
+                            <div onclick="setSkinColor('#3d2314')" class="color-bubble" style="background:#3d2314"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. MAKEUP TAB -->
+                <div id="tab-makeup" class="tab-content hidden space-y-4">
+                    <!-- Lipstick Section -->
+                    <div class="glass-panel p-3 rounded-2xl">
+                        <span class="text-xs font-bold text-pink-400 block mb-2"><i class="fas fa-lips"></i> Pintalabios / Lipstick</span>
+                        <div class="flex gap-2 wrap items-center">
+                            <div onclick="setLipstick('none')" class="color-bubble flex items-center justify-center text-xs bg-gray-800"><i class="fas fa-ban"></i></div>
+                            <div onclick="setLipstick('#d62828')" class="color-bubble" style="background:#d62828" title="Rojo Pasión"></div>
+                            <div onclick="setLipstick('#ff007f')" class="color-bubble" style="background:#ff007f" title="Rosa Neon"></div>
+                            <div onclick="setLipstick('#6a040f')" class="color-bubble" style="background:#6a040f" title="Vino Tinto"></div>
+                            <div onclick="setLipstick('#f72585')" class="color-bubble" style="background:#f72585" title="Fucsia Pop"></div>
+                            <div onclick="setLipstick('#b5838d')" class="color-bubble" style="background:#b5838d" title="Nude Elegante"></div>
+                            <div onclick="setLipstick('#7209b7')" class="color-bubble" style="background:#7209b7" title="Gótico Morado"></div>
+                        </div>
+                    </div>
+
+                    <!-- Eyeshadow Section -->
+                    <div class="glass-panel p-3 rounded-2xl">
+                        <span class="text-xs font-bold text-purple-400 block mb-2"><i class="fas fa-eye"></i> Sombra de Ojos / Eyeshadow</span>
+                        <div class="flex gap-2 wrap">
+                            <div onclick="setEyeshadow('none')" class="color-bubble flex items-center justify-center text-xs bg-gray-800"><i class="fas fa-ban"></i></div>
+                            <div onclick="setEyeshadow('#ffb703')" class="color-bubble" style="background:#ffb703"></div>
+                            <div onclick="setEyeshadow('#00b4d8')" class="color-bubble" style="background:#00b4d8"></div>
+                            <div onclick="setEyeshadow('#7209b7')" class="color-bubble" style="background:#7209b7"></div>
+                            <div onclick="setEyeshadow('#ff007f')" class="color-bubble" style="background:#ff007f"></div>
+                            <div onclick="setEyeshadow('#38b000')" class="color-bubble" style="background:#38b000"></div>
+                            <div onclick="setEyeshadow('#ffffff')" class="color-bubble" style="background:#ffffff"></div>
+                        </div>
+                    </div>
+
+                    <!-- Blush Section -->
+                    <div class="glass-panel p-3 rounded-2xl">
+                        <span class="text-xs font-bold text-amber-300 block mb-2"><i class="fas fa-smile"></i> Rubor / Blush</span>
+                        <div class="flex gap-2 wrap">
+                            <div onclick="setBlush('none')" class="color-bubble flex items-center justify-center text-xs bg-gray-800"><i class="fas fa-ban"></i></div>
+                            <div onclick="setBlush('#ff758f')" class="color-bubble" style="background:#ff758f"></div>
+                            <div onclick="setBlush('#ff4d6d')" class="color-bubble" style="background:#ff4d6d"></div>
+                            <div onclick="setBlush('#c9184a')" class="color-bubble" style="background:#c9184a"></div>
+                            <div onclick="setBlush('#ffb5a7')" class="color-bubble" style="background:#ffb5a7"></div>
+                        </div>
+                    </div>
+
+                    <!-- Glitter / Face Gems -->
+                    <div class="glass-panel p-3 rounded-2xl flex items-center justify-between">
+                        <span class="text-xs font-bold text-amber-200"><i class="fas fa-sparkles text-amber-400"></i> Brillantes de Rostro & Glitters</span>
+                        <input type="checkbox" id="glitter-toggle" onchange="toggleGlitter(this.checked)" class="w-5 h-5 accent-pink-500 cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- 3. HAIR TAB -->
+                <div id="tab-hair" class="tab-content hidden space-y-4">
+                    <h3 class="text-sm font-bold text-pink-400 uppercase tracking-wider">Estilos de Peinado</h3>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="setHairstyle('long')" class="glass-panel p-3 rounded-2xl border border-white/10 hover:border-pink-500 flex flex-col items-center gap-1">
+                            <i class="fas fa-female text-2xl text-pink-400"></i>
+                            <span class="text-xs font-semibold">Ondas Largas</span>
+                        </button>
+                        <button onclick="setHairstyle('bob')" class="glass-panel p-3 rounded-2xl border border-white/10 hover:border-pink-500 flex flex-col items-center gap-1">
+                            <i class="fas fa-user-ninja text-2xl text-purple-400"></i>
+                            <span class="text-xs font-semibold">Corte Bob Chic</span>
+                        </button>
+                        <button onclick="setHairstyle('afro')" class="glass-panel p-3 rounded-2xl border border-white/10 hover:border-pink-500 flex flex-col items-center gap-1">
+                            <i class="fas fa-cloud text-2xl text-amber-400"></i>
+                            <span class="text-xs font-semibold">Afro Voluminoso</span>
+                        </button>
+                        <button onclick="setHairstyle('ponytail')" class="glass-panel p-3 rounded-2xl border border-white/10 hover:border-pink-500 flex flex-col items-center gap-1">
+                            <i class="fas fa-ribbon text-2xl text-blue-400"></i>
+                            <span class="text-xs font-semibold">Coleta Alta</span>
+                        </button>
+                        <button onclick="setHairstyle('glam')" class="glass-panel p-3 rounded-2xl border border-white/10 hover:border-pink-500 flex flex-col items-center gap-1">
+                            <i class="fas fa-star text-2xl text-yellow-400"></i>
+                            <span class="text-xs font-semibold">Glam Hollywood</span>
+                        </button>
+                    </div>
+
+                    <!-- Hair Color Palette -->
+                    <div class="glass-panel p-3 rounded-2xl mt-3">
+                        <span class="text-xs font-bold text-purple-300 block mb-2">Tinte de Cabello</span>
+                        <div class="flex gap-2 wrap">
+                            <div onclick="setHairColor('#1a1a1a')" class="color-bubble" style="background:#1a1a1a" title="Negro Azabache"></div>
+                            <div onclick="setHairColor('#4a2810')" class="color-bubble" style="background:#4a2810" title="Castaño Oscuro"></div>
+                            <div onclick="setHairColor('#e6b800')" class="color-bubble" style="background:#e6b800" title="Rubio Dorado"></div>
+                            <div onclick="setHairColor('#b33951')" class="color-bubble" style="background:#b33951" title="Cobrizo"></div>
+                            <div onclick="setHairColor('#ff007f')" class="color-bubble" style="background:#ff007f" title="Rosa Fantasía"></div>
+                            <div onclick="setHairColor('#00f5d4')" class="color-bubble" style="background:#00f5d4" title="Turquesa Cyber"></div>
+                            <div onclick="setHairColor('#7b2cbf')" class="color-bubble" style="background:#7b2cbf" title="Púrpura Neón"></div>
+                            <div onclick="setHairColor('#e9ecef')" class="color-bubble" style="background:#e9ecef" title="Platinado"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. CLOTHES TAB -->
+                <div id="tab-clothes" class="tab-content hidden space-y-4">
+                    <!-- Clothes Type Selector -->
+                    <div class="flex gap-2 overflow-x-auto pb-2 border-b border-white/10">
+                        <button onclick="filterClothes('dresses')" id="clothes-sub-dresses" class="px-3 py-1.5 rounded-full text-xs font-bold bg-pink-500/30 text-pink-300 border border-pink-500">Vestidos</button>
+                        <button onclick="filterClothes('tops')" id="clothes-sub-tops" class="px-3 py-1.5 rounded-full text-xs font-bold glass-panel text-gray-300">Tops / Blusas</button>
+                        <button onclick="filterClothes('bottoms')" id="clothes-sub-bottoms" class="px-3 py-1.5 rounded-full text-xs font-bold glass-panel text-gray-300">Pantalones / Faldas</button>
+                    </div>
+
+                    <!-- Items Grid -->
+                    <div id="clothes-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <!-- Rendered dynamically by JS -->
+                    </div>
+
+                    <!-- Outfit Primary Color Modifier -->
+                    <div class="glass-panel p-3 rounded-2xl">
+                        <span class="text-xs font-bold text-amber-300 block mb-2"><i class="fas fa-palette"></i> Tinte Personalizado de Ropa</span>
+                        <div class="flex gap-2 wrap">
+                            <div onclick="setOutfitColor('#ff2a85')" class="color-bubble" style="background:#ff2a85"></div>
+                            <div onclick="setOutfitColor('#3a86ff')" class="color-bubble" style="background:#3a86ff"></div>
+                            <div onclick="setOutfitColor('#8338ec')" class="color-bubble" style="background:#8338ec"></div>
+                            <div onclick="setOutfitColor('#ff006e')" class="color-bubble" style="background:#ff006e"></div>
+                            <div onclick="setOutfitColor('#fb5607')" class="color-bubble" style="background:#fb5607"></div>
+                            <div onclick="setOutfitColor('#ffbe0b')" class="color-bubble" style="background:#ffbe0b"></div>
+                            <div onclick="setOutfitColor('#00f5d4')" class="color-bubble" style="background:#00f5d4"></div>
+                            <div onclick="setOutfitColor('#111111')" class="color-bubble" style="background:#111111"></div>
+                            <div onclick="setOutfitColor('#ffffff')" class="color-bubble" style="background:#ffffff"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. ACCESSORIES TAB -->
+                <div id="tab-accessories" class="tab-content hidden space-y-4">
+                    <h3 class="text-sm font-bold text-amber-400 uppercase tracking-wider">Joyería & Complementos</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <!-- Glasses -->
+                        <button onclick="toggleAccessory('glasses')" id="acc-btn-glasses" class="glass-panel p-3 rounded-2xl border border-white/10 hover:border-amber-400 flex flex-col items-center gap-1">
+                            <i class="fas fa-glasses text-2xl text-amber-300"></i>
+                            <span class="text-xs font-semibold">Gafas Sol High Glam</span>
+                        </button>
+                        <!-- Necklace -->
+                        <button onclick="toggleAccessory('necklace')" id="acc-btn-necklace" class="glass-panel p-3 rounded-2xl border border-white/10 hover:border-amber-400 flex flex-col items-center gap-1">
+                            <i class="fas fa-gem text-2xl text-blue-300"></i>
+                            <span class="text-xs font-semibold">Collar de Diamantes</span>
+                        </button>
+                        <!-- Earrings -->
+                        <button onclick="toggleAccessory('earrings')" id="acc-btn-earrings" class="glass-panel p-3 rounded-2xl border border-white/10 hover:border-amber-400 flex flex-col items-center gap-1">
+                            <i class="fas fa-circle text-xl text-yellow-400"></i>
+                            <span class="text-xs font-semibold">Arracadas Doradas</span>
+                        </button>
+                        <!-- Crown / Tiara -->
+                        <button onclick="toggleAccessory('crown')" id="acc-btn-crown" class="glass-panel p-3 rounded-2xl border border-white/10 hover:border-amber-400 flex flex-col items-center gap-1">
+                            <i class="fas fa-crown text-2xl text-amber-400"></i>
+                            <span class="text-xs font-semibold">Corona de Gala</span>
+                        </button>
+                        <!-- Bag -->
+                        <button onclick="toggleAccessory('bag')" id="acc-btn-bag" class="glass-panel p-3 rounded-2xl border border-white/10 hover:border-amber-400 flex flex-col items-center gap-1">
+                            <i class="fas fa-shopping-bag text-2xl text-pink-400"></i>
+                            <span class="text-xs font-semibold">Bolso de Mano</span>
+                        </button>
+                        <!-- Wings / Aura -->
+                        <button onclick="toggleAccessory('aura')" id="acc-btn-aura" class="glass-panel p-3 rounded-2xl border border-white/10 hover:border-amber-400 flex flex-col items-center gap-1">
+                            <i class="fas fa-feather-alt text-2xl text-purple-300"></i>
+                            <span class="text-xs font-semibold">Alas / Aura Brillante</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- RUNWAY SHOW & AI EVALUATION OVERLAY -->
+    <div id="runway-modal" class="fixed inset-0 z-50 bg-black/95 hidden flex flex-col items-center justify-between p-4 sm:p-8 backdrop-blur-2xl">
+        
+        <!-- Flash FX overlay -->
+        <div class="flash-screen absolute inset-0 bg-white pointer-events-none opacity-0"></div>
+
+        <!-- Runway Stage Viewport -->
+        <div class="w-full max-w-4xl flex-1 relative rounded-3xl overflow-hidden glass-panel border border-pink-500/30 flex items-center justify-center">
+            <!-- Animated Runway Background Grid -->
+            <div class="absolute inset-0 bg-gradient-to-b from-purple-900 via-pink-950 to-black"></div>
+            <!-- Stage Lights -->
+            <div class="spotlight left-1/4"></div>
+            <div class="spotlight left-3/4" style="animation-delay: -3s;"></div>
+
+            <!-- Model On Runway (Animated Walk) -->
+            <div id="runway-model-stage" class="relative z-10 w-64 h-96 transition-all duration-1000 transform hover:scale-105">
+                <!-- Cloned SVG model injected here -->
+            </div>
+
+            <!-- Photographers / Audience Silhouettes -->
+            <div class="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-black to-transparent z-20 flex items-end justify-around px-4 opacity-75">
+                <i class="fas fa-camera text-yellow-200 text-lg animate-pulse"></i>
+                <i class="fas fa-camera text-white text-sm animate-pulse" style="animation-delay:0.5s"></i>
+                <i class="fas fa-camera text-pink-300 text-xl animate-pulse" style="animation-delay:1s"></i>
+                <i class="fas fa-camera text-amber-300 text-sm animate-pulse" style="animation-delay:0.2s"></i>
+            </div>
+        </div>
+
+        <!-- AI Judges & Rating Results Panel -->
+        <div id="scoring-panel" class="w-full max-w-2xl glass-panel mt-4 p-4 rounded-3xl border border-white/20 text-center shadow-2xl">
+            <h2 class="font-serif text-xl sm:text-2xl font-extrabold text-amber-300 mb-1">
+                <i class="fas fa-award"></i> Evaluación del Jurado de Moda IA
+            </h2>
+            <p id="runway-feedback" class="text-xs sm:text-sm text-purple-200 mb-4">Los jueces están analizando la combinación de colores, atuendo y maquillaje...</p>
+
+            <!-- Stars display -->
+            <div id="stars-container" class="flex justify-center gap-2 text-2xl sm:text-3xl text-amber-400 mb-4">
+                <i class="far fa-star"></i>
+                <i class="far fa-star"></i>
+                <i class="far fa-star"></i>
+                <i class="far fa-star"></i>
+                <i class="far fa-star"></i>
+            </div>
+
+            <!-- Breakdown -->
+            <div class="grid grid-cols-3 gap-2 mb-4 text-xs">
+                <div class="glass-panel p-2 rounded-xl">
+                    <span class="text-gray-400 block">Estilo & Tema</span>
+                    <span id="score-theme" class="font-bold text-pink-400 text-sm">--</span>
+                </div>
+                <div class="glass-panel p-2 rounded-xl">
+                    <span class="text-gray-400 block">Armonía de Color</span>
+                    <span id="score-color" class="font-bold text-purple-300 text-sm">--</span>
+                </div>
+                <div class="glass-panel p-2 rounded-xl">
+                    <span class="text-gray-400 block">Accesorios</span>
+                    <span id="score-acc" class="font-bold text-amber-300 text-sm">--</span>
+                </div>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="flex gap-3 justify-center">
+                <button onclick="closeRunwayShow()" class="px-6 py-2.5 rounded-full font-bold text-sm glass-panel hover:bg-white/10 text-gray-200 transition">
+                    Ajustar Outfit
+                </button>
+                <button id="next-level-btn" onclick="nextLevel()" class="px-6 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-pink-500 to-amber-500 text-white glow-gold transition hidden">
+                    ¡Siguiente Nivel! <i class="fas fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* SOUND FX SYSTEM (Web Audio API - No External Assets Needed) */
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'sparkle') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.setValueAtTime(1200, now + 0.05);
+                osc.frequency.setValueAtTime(1600, now + 0.1);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'fanfare') {
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const noteOsc = audioCtx.createOscillator();
+                    const noteGain = audioCtx.createGain();
+                    noteOsc.connect(noteGain);
+                    noteGain.connect(audioCtx.destination);
+                    noteOsc.frequency.setValueAtTime(freq, now + idx * 0.1);
+                    noteGain.gain.setValueAtTime(0.2, now + idx * 0.1);
+                    noteGain.gain.linearRampToValueAtTime(0.01, now + idx * 0.1 + 0.25);
+                    noteOsc.start(now + idx * 0.1);
+                    noteOsc.stop(now + idx * 0.1 + 0.25);
+                });
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            if (soundEnabled) {
+                icon.className = 'fas fa-volume-up';
+                playSound('click');
+            } else {
+                icon.className = 'fas fa-volume-mute';
+            }
+        }
+
+        /* GAME STATE VARIABLES */
+        let currentLevelIndex = 0;
+        let coins = 1200;
+
+        const LEVELS = [
+            { title: "Gala de Alfombra Roja", desc: "Elegancia deslumbrante, vestidos de noche y destellos dorados.", targetScore: 75, reqCategory: 'dresses' },
+            { title: "Estilo Urbano Cyberpunk", desc: "Colores neón, chaquetas futuristas y maquillaje audaz.", targetScore: 80, reqCategory: 'tops' },
+            { title: "Festival Boho Chic", desc: "Estilo libre, accesorios abundantes y tonos cálidos.", targetScore: 85, reqCategory: 'accessories' },
+            { title: "Haute Couture Met Gala", desc: "Arte conceptual, accesorios dramáticos y combinaciones únicas.", targetScore: 92, reqCategory: 'dresses' }
+        ];
+
+        /* MODEL STATE */
+        const models = [
+            { name: 'Valentina', bodyType: 'curvy', skinColor: '#e0ac69', height: 1.0 },
+            { name: 'Amina', bodyType: 'tall', skinColor: '#3d2314', height: 1.08 },
+            { name: 'Elena', bodyType: 'petite', skinColor: '#ffdbac', height: 0.92 },
+            { name: 'Zoe', bodyType: 'athletic', skinColor: '#c68642', height: 1.0 }
+        ];
+
+        let state = {
+            selectedModelIndex: 0,
+            skinColor: '#e0ac69',
+            lipstick: '#d62828',
+            eyeshadow: '#ffb703',
+            blush: '#ff758f',
+            glitter: false,
+            hairstyle: 'long',
+            hairColor: '#4a2810',
+            clothesCategory: 'dresses', // 'dresses', 'tops', 'bottoms'
+            dressId: 'gown1',
+            topId: 'none',
+            bottomId: 'none',
+            outfitColor: '#ff2a85',
+            accessories: {
+                glasses: false,
+                necklace: true,
+                earrings: true,
+                crown: false,
+                bag: false,
+                aura: false
+            }
+        };
+
+        /* CLOTHES DATABASE */
+        const WARDROBE = {
+            dresses: [
+                { id: 'gown1', name: 'Vestido Siren Gala', icon: 'fa-female' },
+                { id: 'gown2', name: 'Vestido Princesa Neón', icon: 'fa-gem' },
+                { id: 'gown3', name: 'Maxi Vestido Bohemio', icon: 'fa-feather' },
+                { id: 'gown4', name: 'Corte Imperial Gold', icon: 'fa-crown' }
+            ],
+            tops: [
+                { id: 'top1', name: 'Corsé Neón Futurista', icon: 'fa-bolt' },
+                { id: 'top2', name: 'Chaqueta de Cuero Glam', icon: 'fa-vest' },
+                { id: 'top3', name: 'Blusa Seda Elegante', icon: 'fa-tshirt' }
+            ],
+            bottoms: [
+                { id: 'bottom1', name: 'Falda Tubo Lentejuelas', icon: 'fa-ellipsis-v' },
+                { id: 'bottom2', name: 'Pantalón Cyber Neón', icon: 'fa-columns' },
+                { id: 'bottom3', name: 'Falda Plisada Chic', icon: 'fa-stream' }
+            ]
+        };
+
+        function renderModelSVG() {
+            const container = document.getElementById('model-container');
+            const model = models[state.selectedModelIndex];
+
+            // Width modifications according to body shape
+            let waistWidth = 32;
+            let hipWidth = 52;
+            let shoulderWidth = 50;
+
+            if (model.bodyType === 'curvy') {
+                waistWidth = 36;
+                hipWidth = 62;
+                shoulderWidth = 52;
+            } else if (model.bodyType === 'tall') {
+                waistWidth = 28;
+                hipWidth = 46;
+                shoulderWidth = 48;
+            } else if (model.bodyType === 'petite') {
+                waistWidth = 30;
+                hipWidth = 48;
+                shoulderWidth = 46;
+            }
+
+            const svgHTML = `
+                <svg viewBox="0 0 200 400" class="w-full h-full max-h-[460px] filter drop-shadow-2xl">
+                    <defs>
+                        <!-- Glow Effects -->
+                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="4" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+
+                    <!-- AURA ACCESSORY -->
+                    ${state.accessories.aura ? `
+                        <g filter="url(#glow)">
+                            <circle cx="100" cy="180" r="85" fill="none" stroke="${state.outfitColor}" stroke-width="3" stroke-dasharray="6,6" opacity="0.8" />
+                            <path d="M 40,160 Q 10,120 30,80 Q 70,120 50,180 Z" fill="${state.outfitColor}" opacity="0.4"/>
+                            <path d="M 160,160 Q 190,120 170,80 Q 130,120 150,180 Z" fill="${state.outfitColor}" opacity="0.4"/>
+                        </g>
+                    ` : ''}
+
+                    <!-- BODY BASE -->
+                    <g id="body-group">
+                        <!-- Head -->
+                        <ellipse cx="100" cy="65" rx="22" ry="28" fill="${state.skinColor}" />
+                        <!-- Neck -->
+                        <path d="M 93,90 L 107,90 L 109,105 L 91,105 Z" fill="${state.skinColor}" />
+                        <!-- Torso & Arms -->
+                        <path d="M ${100 - shoulderWidth/2},105 Q 100,125 ${100 - waistWidth/2},160 Q 100,185 ${100 - hipWidth/2},220 L ${100 + hipWidth/2},220 Q 100,185 ${100 + waistWidth/2},160 Q 100,125 ${100 + shoulderWidth/2},105 Z" fill="${state.skinColor}" />
+                        <!-- Legs -->
+                        <path d="M 80,220 L 84,360 L 95,360 L 96,220 Z" fill="${state.skinColor}" />
+                        <path d="M 104,220 L 105,360 L 116,360 L 120,220 Z" fill="${state.skinColor}" />
+                        <!-- High Heels Feet Base -->
+                        <path d="M 80,355 L 95,365 L 85,375 Z" fill="${state.outfitColor}" />
+                        <path d="M 120,355 L 105,365 L 115,375 Z" fill="${state.outfitColor}" />
+                    </g>
+
+                    <!-- MAKEUP LAYERS -->
+                    <g id="facial-features">
+                        <!-- Eyes & Eyebrows -->
+                        <path d="M 84,55 Q 90,52 94,56" stroke="#222" stroke-width="2" fill="none" />
+                        <path d="M 106,56 Q 110,52 116,55" stroke="#222" stroke-width="2" fill="none" />
+                        
+                        <!-- Eyeshadow -->
+                        ${state.eyeshadow !== 'none' ? `
+                            <ellipse cx="89" cy="62" rx="6" ry="3" fill="${state.eyeshadow}" opacity="0.8" />
+                            <ellipse cx="111" cy="62" rx="6" ry="3" fill="${state.eyeshadow}" opacity="0.8" />
+                        ` : ''}
+
+                        <!-- Eye pupils -->
+                        <circle cx="89" cy="63" r="2.5" fill="#1a1a1a" />
+                        <circle cx="111" cy="63" r="2.5" fill="#1a1a1a" />
+                        <circle cx="90" cy="62" r="0.8" fill="#ffffff" />
+                        <circle cx="112" cy="62" r="0.8" fill="#ffffff" />
+
+                        <!-- Blush -->
+                        ${state.blush !== 'none' ? `
+                            <ellipse cx="82" cy="70" rx="6" ry="4" fill="${state.blush}" opacity="0.5" />
+                            <ellipse cx="118" cy="70" rx="6" ry="4" fill="${state.blush}" opacity="0.5" />
+                        ` : ''}
+
+                        <!-- Lipstick -->
+                        ${state.lipstick !== 'none' ? `
+                            <path d="M 92,78 Q 100,75 108,78 Q 100,85 92,78 Z" fill="${state.lipstick}" />
+                        ` : `
+                            <path d="M 94,79 Q 100,77 106,79" stroke="#b5838d" stroke-width="2" fill="none" />
+                        `}
+
+                        <!-- Face Glitter -->
+                        ${state.glitter ? `
+                            <circle cx="80" cy="66" r="1" fill="#fff" />
+                            <circle cx="83" cy="68" r="1.5" fill="#ffd700" />
+                            <circle cx="117" cy="68" r="1.5" fill="#ffd700" />
+                            <circle cx="120" cy="66" r="1" fill="#fff" />
+                        ` : ''}
+                    </g>
+
+                    <!-- OUTFIT LAYERS -->
+                    <g id="outfit-layer">
+                        ${renderOutfitSVG(waistWidth, hipWidth, shoulderWidth)}
+                    </g>
+
+                    <!-- HAIR LAYER -->
+                    <g id="hair-layer">
+                        ${renderHairSVG()}
+                    </g>
+
+                    <!-- ACCESSORIES LAYER -->
+                    <g id="accessories-layer">
+                        <!-- Glasses -->
+                        ${state.accessories.glasses ? `
+                            <path d="M 80,60 L 96,60 L 100,63 L 104,60 L 120,60 L 118,68 L 82,68 Z" fill="#111" opacity="0.85" />
+                            <line x1="80" y1="62" x2="74" y2="60" stroke="#111" stroke-width="2"/>
+                            <line x1="120" y1="62" x2="126" y2="60" stroke="#111" stroke-width="2"/>
+                        ` : ''}
+
+                        <!-- Crown -->
+                        ${state.accessories.crown ? `
+                            <path d="M 86,45 L 90,32 L 96,40 L 100,28 L 104,40 L 110,32 L 114,45 Z" fill="#ffd700" stroke="#fff" stroke-width="1" />
+                            <circle cx="100" cy="32" r="2" fill="#ff007f" />
+                        ` : ''}
+
+                        <!-- Earrings -->
+                        ${state.accessories.earrings ? `
+                            <circle cx="76" cy="70" r="3" fill="#ffd700" />
+                            <circle cx="124" cy="70" r="3" fill="#ffd700" />
+                        ` : ''}
+
+                        <!-- Necklace -->
+                        ${state.accessories.necklace ? `
+                            <path d="M 90,100 Q 100,112 110,100" stroke="#ffffff" stroke-width="2.5" fill="none" />
+                            <polygon points="100,110 103,115 100,120 97,115" fill="#00b4d8" />
+                        ` : ''}
+
+                        <!-- Handbag -->
+                        ${state.accessories.bag ? `
+                            <rect x="130" y="200" width="24" height="20" rx="3" fill="${state.outfitColor}" stroke="#fff" stroke-width="1" />
+                            <path d="M 136,200 Q 142,185 148,200" stroke="#fff" stroke-width="1.5" fill="none" />
+                        ` : ''}
+                    </g>
+                </svg>
+            `;
+
+            container.innerHTML = svgHTML;
+        }
+
+        /* Helper to Render SVG Hair Styles */
+        function renderHairSVG() {
+            const color = state.hairColor;
+            switch(state.hairstyle) {
+                case 'bob':
+                    return `<path d="M 74,60 Q 72,35 100,35 Q 128,35 126,60 L 128,85 L 116,85 L 114,65 Q 100,50 86,65 L 84,85 L 72,85 Z" fill="${color}" />`;
+                case 'afro':
+                    return `<circle cx="100" cy="55" r="38" fill="${color}" /><circle cx="100" cy="55" r="35" fill="${color}" opacity="0.8" />`;
+                case 'ponytail':
+                    return `
+                        <path d="M 76,60 Q 75,38 100,38 Q 125,38 124,60 Q 100,50 76,60 Z" fill="${color}" />
+                        <path d="M 115,48 Q 140,50 145,85 Q 135,90 120,60 Z" fill="${color}" />
+                    `;
+                case 'glam':
+                    return `
+                        <path d="M 70,60 Q 75,30 100,30 Q 125,30 130,60 Q 135,110 125,160 Q 115,130 122,80 Q 100,45 78,80 Q 65,120 70,60 Z" fill="${color}" />
+                    `;
+                case 'long':
+                default:
+                    return `
+                        <path d="M 74,60 Q 75,32 100,32 Q 125,32 126,60 Q 130,120 124,170 Q 116,120 120,70 Q 100,45 80,70 Q 84,120 76,170 Q 70,120 74,60 Z" fill="${color}" />
+                    `;
+            }
+        }
+
+        /* Helper to Render Outfit SVG Layers */
+        function renderOutfitSVG(waist, hip, shoulder) {
+            const color = state.outfitColor;
+            
+            if (state.clothesCategory === 'dresses') {
+                if (state.dressId === 'gown1') {
+                    // Siren Evening Gown
+                    return `<path d="M ${100 - shoulder/2 + 4},110 L ${100 + shoulder/2 - 4},110 Q 100,135 ${100 + waist/2},160 Q 100,190 ${100 + hip/2 + 5},220 L 135,360 L 65,360 L ${100 - hip/2 - 5},220 Q 100,190 ${100 - waist/2},160 Z" fill="${color}" />`;
+                } else if (state.dressId === 'gown2') {
+                    // Ball Gown
+                    return `
+                        <path d="M ${100 - shoulder/2 + 6},110 L ${100 + shoulder/2 - 6},110 L ${100 + waist/2},160 L ${100 - waist/2},160 Z" fill="${color}" />
+                        <path d="M ${100 - waist/2},160 Q 100,180 155,360 L 45,360 Q 100,180 ${100 - waist/2},160 Z" fill="${color}" opacity="0.9" />
+                    `;
+                } else if (state.dressId === 'gown3') {
+                    // Boho Maxi
+                    return `<path d="M 80,115 L 120,115 L 128,360 L 72,360 Z" fill="${color}" stroke="#fff" stroke-width="1" />`;
+                } else {
+                    // High-slit Imperial Dress
+                    return `
+                        <path d="M ${100 - shoulder/2 + 4},105 L ${100 + shoulder/2 - 4},105 L ${100 + waist/2},160 L 115,220 L 120,360 L 65,360 L ${100 - waist/2},160 Z" fill="${color}" />
+                    `;
+                }
+            } else {
+                // Render Top & Bottom Combo
+                let topSVG = '';
+                let bottomSVG = '';
+
+                if (state.topId === 'top1') {
+                    topSVG = `<path d="M 78,110 L 122,110 L 116,160 L 84,160 Z" fill="${color}" />`;
+                } else if (state.topId === 'top2') {
+                    topSVG = `<path d="M 72,105 L 128,105 L 122,165 L 78,165 Z" fill="#222" stroke="${color}" stroke-width="2" />`;
+                } else {
+                    topSVG = `<path d="M 76,108 L 124,108 L 118,155 L 82,155 Z" fill="${color}" />`;
+                }
+
+                if (state.bottomId === 'bottom1') {
+                    bottomSVG = `<path d="M 84,160 L 116,160 L 122,260 L 78,260 Z" fill="${color}" />`;
+                } else if (state.bottomId === 'bottom2') {
+                    bottomSVG = `
+                        <path d="M 84,160 L 98,160 L 94,350 L 78,350 Z" fill="${color}" />
+                        <path d="M 102,160 L 116,160 L 122,350 L 106,350 Z" fill="${color}" />
+                    `;
+                } else {
+                    bottomSVG = `<path d="M 84,160 L 116,160 L 130,230 L 70,230 Z" fill="${color}" />`;
+                }
+
+                return topSVG + bottomSVG;
+            }
+        }
+
+        function switchTab(tabName) {
+            playSound('click');
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('tab-active');
+                btn.classList.add('text-gray-400');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+            const activeTab = document.getElementById(`tab-${tabName}`);
+            
+            if (activeBtn && activeTab) {
+                activeBtn.classList.add('tab-active');
+                activeBtn.classList.remove('text-gray-400');
+                activeTab.classList.remove('hidden');
+            }
+        }
+
+        function selectModel(index) {
+            playSound('click');
+            state.selectedModelIndex = index;
+            state.skinColor = models[index].skinColor;
+
+            document.querySelectorAll('.model-select-card').forEach((card, idx) => {
+                if (idx === index) {
+                    card.classList.add('border-pink-500', 'bg-pink-500/10');
+                    card.classList.remove('border-transparent');
+                } else {
+                    card.classList.remove('border-pink-500', 'bg-pink-500/10');
+                    card.classList.add('border-transparent');
+                }
+            });
+
+            renderModelSVG();
+        }
+
+        function setSkinColor(color) {
+            playSound('click');
+            state.skinColor = color;
+            renderModelSVG();
+        }
+
+        function setLipstick(color) {
+            playSound('click');
+            state.lipstick = color;
+            renderModelSVG();
+        }
+
+        function setEyeshadow(color) {
+            playSound('click');
+            state.eyeshadow = color;
+            renderModelSVG();
+        }
+
+        function setBlush(color) {
+            playSound('click');
+            state.blush = color;
+            renderModelSVG();
+        }
+
+        function toggleGlitter(checked) {
+            playSound('sparkle');
+            state.glitter = checked;
+            renderModelSVG();
+        }
+
+        function setHairstyle(style) {
+            playSound('click');
+            state.hairstyle = style;
+            renderModelSVG();
+        }
+
+        function setHairColor(color) {
+            playSound('click');
+            state.hairColor = color;
+            renderModelSVG();
+        }
+
+        function filterClothes(cat) {
+            playSound('click');
+            state.clothesCategory = cat;
+            
+            ['dresses', 'tops', 'bottoms'].forEach(c => {
+                const btn = document.getElementById(`clothes-sub-${c}`);
+                if (c === cat) {
+                    btn.className = 'px-3 py-1.5 rounded-full text-xs font-bold bg-pink-500/30 text-pink-300 border border-pink-500';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded-full text-xs font-bold glass-panel text-gray-300';
+                }
+            });
+
+            renderWardrobeGrid();
+            renderModelSVG();
+        }
+
+        function renderWardrobeGrid() {
+            const grid = document.getElementById('clothes-grid');
+            const items = WARDROBE[state.clothesCategory] || [];
+
+            grid.innerHTML = items.map(item => `
+                <button onclick="selectOutfitItem('${item.id}')" class="glass-panel p-3 rounded-2xl border border-white/10 hover:border-pink-500 flex flex-col items-center gap-2 transition transform active:scale-95">
+                    <i class="fas ${item.icon} text-2xl text-pink-400"></i>
+                    <span class="text-xs font-semibold text-center text-gray-200">${item.name}</span>
+                </button>
+            `).join('');
+        }
+
+        function selectOutfitItem(id) {
+            playSound('click');
+            if (state.clothesCategory === 'dresses') {
+                state.dressId = id;
+            } else if (state.clothesCategory === 'tops') {
+                state.topId = id;
+            } else if (state.clothesCategory === 'bottoms') {
+                state.bottomId = id;
+            }
+            renderModelSVG();
+        }
+
+        function setOutfitColor(color) {
+            playSound('sparkle');
+            state.outfitColor = color;
+            renderModelSVG();
+        }
+
+        function toggleAccessory(acc) {
+            playSound('sparkle');
+            state.accessories[acc] = !state.accessories[acc];
+            const btn = document.getElementById(`acc-btn-${acc}`);
+            if (btn) {
+                if (state.accessories[acc]) {
+                    btn.classList.add('border-amber-400', 'bg-amber-400/20');
+                } else {
+                    btn.classList.remove('border-amber-400', 'bg-amber-400/20');
+                }
+            }
+            renderModelSVG();
+        }
+
+        function resetOutfit() {
+            playSound('click');
+            state.lipstick = 'none';
+            state.eyeshadow = 'none';
+            state.blush = 'none';
+            state.glitter = false;
+            state.accessories = { glasses: false, necklace: false, earrings: false, crown: false, bag: false, aura: false };
+            renderModelSVG();
+        }
+
+        function randomizeStyle() {
+            playSound('sparkle');
+            const lips = ['#d62828', '#ff007f', '#6a040f', '#f72585'];
+            const eyes = ['#ffb703', '#00b4d8', '#7209b7', '#ff007f'];
+            const colors = ['#ff2a85', '#3a86ff', '#8338ec', '#ff006e', '#fb5607', '#00f5d4'];
+            const styles = ['long', 'bob', 'afro', 'ponytail', 'glam'];
+
+            state.lipstick = lips[Math.floor(Math.random() * lips.length)];
+            state.eyeshadow = eyes[Math.floor(Math.random() * eyes.length)];
+            state.outfitColor = colors[Math.floor(Math.random() * colors.length)];
+            state.hairstyle = styles[Math.floor(Math.random() * styles.length)];
+            state.glitter = Math.random() > 0.5;
+
+            renderModelSVG();
+        }
+
+        function startRunwayShow() {
+            playSound('fanfare');
+            const modal = document.getElementById('runway-modal');
+            const stage = document.getElementById('runway-model-stage');
+            
+            // Clone model SVG to runway stage
+            stage.innerHTML = document.getElementById('model-container').innerHTML;
+            modal.classList.remove('hidden');
+
+            // Simulate AI Evaluation calculation
+            evaluateFashionScore();
+        }
+
+        function evaluateFashionScore() {
+            const currentLevel = LEVELS[currentLevelIndex];
+            
+            // AI Logic Calculation based on combination richness
+            let themeScore = 70 + Math.floor(Math.random() * 15);
+            let colorScore = 75 + Math.floor(Math.random() * 20);
+            let accScore = 70 + (Object.values(state.accessories).filter(Boolean).length * 6);
+
+            if (accScore > 100) accScore = 100;
+
+            const totalScore = Math.floor((themeScore + colorScore + accScore) / 3);
+
+            document.getElementById('score-theme').textContent = `${themeScore}/100`;
+            document.getElementById('score-color').textContent = `${colorScore}/100`;
+            document.getElementById('score-acc').textContent = `${accScore}/100`;
+
+            const feedbackElem = document.getElementById('runway-feedback');
+            const starsElem = document.getElementById('stars-container');
+            const nextBtn = document.getElementById('next-level-btn');
+
+            let starsCount = 3;
+            if (totalScore >= 90) starsCount = 5;
+            else if (totalScore >= 80) starsCount = 4;
+
+            starsElem.innerHTML = Array.from({length: 5}, (_, i) => 
+                i < starsCount ? `<i class="fas fa-star text-amber-400"></i>` : `<i class="far fa-star text-gray-600"></i>`
+            ).join('');
+
+            if (totalScore >= currentLevel.targetScore) {
+                feedbackElem.textContent = `¡IMPRESIONANTE! Los jueces han quedado maravillados con tu propuesta de moda. Puntaje Total: ${totalScore} pts.`;
+                nextBtn.classList.remove('hidden');
+                coins += 300;
+                document.getElementById('coins-display').textContent = coins;
+            } else {
+                feedbackElem.textContent = `Buen intento (${totalScore} pts). Requieres ${currentLevel.targetScore} pts para pasar de nivel. ¡Añade más accesorios o ajusta el maquillaje!`;
+                nextBtn.classList.add('hidden');
+            }
+        }
+
+        function closeRunwayShow() {
+            playSound('click');
+            document.getElementById('runway-modal').classList.add('hidden');
+        }
+
+        function nextLevel() {
+            playSound('fanfare');
+            closeRunwayShow();
+            if (currentLevelIndex < LEVELS.length - 1) {
+                currentLevelIndex++;
+                loadLevel(currentLevelIndex);
+            } else {
+                alert("¡Felicidades! Te has convertido en la Máxima Diseñadora e Ícono de la Moda Mundial.");
+            }
+        }
+
+        function loadLevel(idx) {
+            const level = LEVELS[idx];
+            document.getElementById('level-display').textContent = `Nivel ${idx + 1}`;
+            document.getElementById('theme-title').textContent = level.title;
+            document.getElementById('theme-desc').textContent = level.desc;
+            document.getElementById('target-score').textContent = `${level.targetScore} pts`;
+        }
+
+        /* INITIALIZATION ON WINDOW LOAD */
+        window.onload = function() {
+            renderWardrobeGrid();
+            renderModelSVG();
+            loadLevel(0);
+        }
+    </script>
+</body>
+</html>
